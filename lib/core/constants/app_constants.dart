@@ -29,4 +29,10 @@ class AppConstants {
       '射頻干擾的預防與排除': 2,
     },
   };
+
+  static const Map<String, int> quizPassingScore = {
+    'level3': 25,
+    'level2': 32,
+    'level1': 40,
+  };
 }

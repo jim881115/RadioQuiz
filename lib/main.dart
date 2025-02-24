@@ -5,6 +5,7 @@ import 'features/quiz/screens/home_screen.dart';
 import 'features/quiz/screens/quiz_screen.dart';
 import 'features/quiz/screens/results_screen.dart';
 import 'features/quiz/viewmodels/quiz_viewmodel.dart';
+import 'data/models/question.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +40,17 @@ class QuizApp extends StatelessWidget {
           final level = ModalRoute.of(context)!.settings.arguments as String;
           return QuizScreen(level: level);
         },
-        '/results': (context) => const ResultsScreen(),
+        '/results': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          final String level = args['level'] as String;
+          final List<Question> questions = args['questions'] as List<Question>;
+          final List<int?> selectedAnswers = args['selectedAnswers'] as List<int?>;
+          return ResultsScreen(
+            level: level,
+            questions: questions,
+            selectedAnswers: selectedAnswers,
+          );
+        },
       },
     );
   }

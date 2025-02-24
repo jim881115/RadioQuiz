@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:radioquiz/data/models/question.dart';
 import 'package:radioquiz/features/quiz/viewmodels/quiz_viewmodel.dart';
 import 'package:radioquiz/core/constants/app_constants.dart';
 
@@ -10,24 +11,32 @@ class QuizScreen extends ConsumerStatefulWidget {
   const QuizScreen({super.key, required this.level});
 
   @override
-  ConsumerState<QuizScreen> createState() => _QuizScreenState();
+  ConsumerState<QuizScreen> createState () => _QuizScreenState();
 }
 
 class _QuizScreenState extends ConsumerState<QuizScreen> {
+  late List<Question> questions = [];
   int _currentIndex = 0;
   late Timer _timer;
   int _remainingTime = AppConstants.quizDuration;
-  late List<int?> _selectedAnswers; // 記錄每題的選擇狀態
+  late List<int?> _selectedAnswers = []; // 記錄每題的選擇狀態
+  bool _hasUnanswered = true;
 
   @override
   void initState() {
     super.initState();
-    ref.read(quizControllerProvider.notifier).loadQuestions(widget.level);
-
-    final totalQuestions = ref.read(quizControllerProvider).length;
-    _selectedAnswers = List<int?>.filled(totalQuestions, null); // 初始化為 null
+    
+    _loadQuestions();
     
     _startTimer();
+  }
+
+  Future<void> _loadQuestions() async {
+    await ref.read(quizControllerProvider.notifier).loadQuestions(widget.level);
+
+    questions = ref.read(quizControllerProvider);
+    _selectedAnswers = List<int?>.filled(questions.length, 1);
+    _hasUnanswered = true;
   }
 
   @override
@@ -45,28 +54,33 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       } else {
         timer.cancel();
         // 時間結束，跳轉到結果頁
-        Navigator.pushNamed(context, '/results');
+        Navigator.pushNamed(
+          context,
+          '/results',
+          arguments: {
+            'level': widget.level,
+            'questions': questions,
+            'selectedAnswers': _selectedAnswers,
+          },
+        );
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final questions = ref.watch(quizControllerProvider);
-
+    // 等待資料載入，顯示轉圈圈
     if (questions.isEmpty) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    if (_selectedAnswers.isEmpty || _selectedAnswers.length != questions.length) {
-      _selectedAnswers = List<int?>.filled(questions.length, null);
-    }
-
     final currentQuestion = questions[_currentIndex];
     final minutes = _remainingTime ~/ 60;
     final seconds = _remainingTime % 60;
+
+    _hasUnanswered = _selectedAnswers.any((answer) => answer == null);
 
     return Scaffold(
       appBar: AppBar(title: Text("${widget.level} radio quiz")),
@@ -116,10 +130,33 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: () {
-                    // 結束作答邏輯
-                    Navigator.pushNamed(context, '/results');
-                  },
+                  onPressed: _hasUnanswered
+                  ? () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("提醒"),
+                          content: const Text("您還有未作答的題目，請完成所有題目後再提交"),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("確定"),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  : () {
+                      Navigator.pushNamed(
+                        context,
+                        '/results',
+                        arguments: {
+                          'level': widget.level,
+                          'questions': questions,
+                          'selectedAnswers': _selectedAnswers,
+                        },
+                      );
+                    },
                   child: const Text(
                     "結束作答",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
