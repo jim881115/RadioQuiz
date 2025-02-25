@@ -6,7 +6,7 @@ class Question {
   final List<String> options;
   final int answerIndex;
   final bool hasImage;
-  final String? imagePath;
+  final String? image;
 
   Question({
     required this.id,
@@ -16,7 +16,7 @@ class Question {
     required this.options,
     required this.answerIndex,
     required this.hasImage,
-    this.imagePath,
+    this.image,
   });
 
   factory Question.fromMap(Map<String, dynamic> map) {
@@ -33,7 +33,7 @@ class Question {
       ],
       answerIndex: map['answer'],
       hasImage: map['has_image'] == 1,
-      imagePath: map['image_path'],
+      image: map['image'],
     );
   }
 }

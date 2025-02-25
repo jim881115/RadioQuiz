@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'data/repositories/question_repository.dart';
+import 'data/repositories/image_repository.dart';
 import 'features/quiz/screens/home_screen.dart';
 import 'features/quiz/screens/quiz_screen.dart';
 import 'features/quiz/screens/results_screen.dart';
@@ -14,9 +15,13 @@ void main() async {
   final questionRepository = QuestionRepository();
   await questionRepository.initDatabase();
 
+  // 初始化圖片資料
+  final imageRepository = ImageRepository();
+
   runApp(ProviderScope(
     overrides: [
       questionRepositoryProvider.overrideWithValue(questionRepository),
+      imageRepositoryProvider.overrideWithValue(imageRepository),
     ],
     child: const QuizApp(),
   ));
@@ -45,10 +50,12 @@ class QuizApp extends StatelessWidget {
           final String level = args['level'] as String;
           final List<Question> questions = args['questions'] as List<Question>;
           final List<int?> selectedAnswers = args['selectedAnswers'] as List<int?>;
+          final Map<String, String> images = args['images'] as Map<String, String>;
           return ResultsScreen(
             level: level,
             questions: questions,
             selectedAnswers: selectedAnswers,
+            images: images,
           );
         },
       },

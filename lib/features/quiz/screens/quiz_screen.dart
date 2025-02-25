@@ -16,6 +16,9 @@ class QuizScreen extends ConsumerStatefulWidget {
 
 class _QuizScreenState extends ConsumerState<QuizScreen> {
   late List<Question> questions = [];
+  late Map<String, String> images = {};
+  late double _screenWidth; // 螢幕寬度
+  late double _screenHeight; // 螢幕高度
   int _currentIndex = 0;
   late Timer _timer;
   int _remainingTime = AppConstants.quizDuration;
@@ -25,16 +28,19 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   @override
   void initState() {
     super.initState();
-    
-    _loadQuestions();
-    
+  
+    _loadData();
     _startTimer();
   }
 
-  Future<void> _loadQuestions() async {
-    await ref.read(quizControllerProvider.notifier).loadQuestions(widget.level);
-
-    questions = ref.read(quizControllerProvider);
+  Future<void> _loadData() async {
+    await ref.read(quizControllerProvider.notifier).load(widget.level);
+    // 載入題目
+    questions = ref.read(quizControllerProvider).questions;
+    // 載入圖片
+    images = ref.read(quizControllerProvider).imagePaths;
+    debugPrint("images: $images");
+    
     _selectedAnswers = List<int?>.filled(questions.length, 1);
     _hasUnanswered = true;
   }
@@ -61,6 +67,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             'level': widget.level,
             'questions': questions,
             'selectedAnswers': _selectedAnswers,
+            'images': images,
           },
         );
       }
@@ -80,6 +87,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     final minutes = _remainingTime ~/ 60;
     final seconds = _remainingTime % 60;
 
+    _screenWidth = MediaQuery.of(context).size.width;
+    _screenHeight = MediaQuery.of(context).size.height;
     _hasUnanswered = _selectedAnswers.any((answer) => answer == null);
 
     return Scaffold(
@@ -96,6 +105,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                 // 顯示第幾題
                 Container(
                   padding: const EdgeInsets.all(14),
+                  width: 100,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
                     color: Colors.blue.shade100,
@@ -103,6 +114,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   child: Text(
                     "${_currentIndex + 1} / ${questions.length}",
                     style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
                   ),
                 ),
                 // 顯示倒計時（置中）
@@ -154,6 +166,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                           'level': widget.level,
                           'questions': questions,
                           'selectedAnswers': _selectedAnswers,
+                          'images': images,
                         },
                       );
                     },
@@ -177,12 +190,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             ),
             const SizedBox(height: 20),
 
-            // 題目圖片
+            // 顯示題目圖片（如果有）
             if (currentQuestion.hasImage)
               Image.asset(
-                currentQuestion.imagePath ?? '',
-                fit: BoxFit.cover,
-                height: 200,
+                images[currentQuestion.image] ?? '',
+                fit: BoxFit.contain,
+                height: _screenHeight * 0.33,                                                               
                 width: double.infinity,
               )
             else

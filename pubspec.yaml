@@ -72,7 +72,9 @@ flutter:
   # https://flutter.dev/to/asset-from-package
   assets:
     - assets/database/questions.db
-    - assets/image/
+    - assets/image/level1/
+    - assets/image/level2/
+    - assets/image/level3/
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a

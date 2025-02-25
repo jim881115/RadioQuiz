@@ -1,22 +1,41 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radioquiz/data/models/question.dart';
 import 'package:radioquiz/data/repositories/question_repository.dart';
+import 'package:radioquiz/data/repositories/image_repository.dart';
 
-final quizControllerProvider = StateNotifierProvider<QuizController, List<Question>>((ref) {
-  final repository = ref.read(questionRepositoryProvider);
-  return QuizController(repository);
+final quizControllerProvider = StateNotifierProvider<QuizController, QuizState>((ref) {
+  final questionRepository = ref.read(questionRepositoryProvider);
+  final imageRepository = ref.read(imageRepositoryProvider);
+  return QuizController(questionRepository, imageRepository);
 });
 
 final questionRepositoryProvider = Provider<QuestionRepository>((ref) {
   return QuestionRepository();
 });
 
-class QuizController extends StateNotifier<List<Question>> {
-  final QuestionRepository repository;
+final imageRepositoryProvider = Provider<ImageRepository>((ref) {
+  return ImageRepository();
+});
 
-  QuizController(this.repository) : super([]);
+/// 定義 Quiz 狀態（包含題目 & 圖片）
+class QuizState {
+  final List<Question> questions;
+  final Map<String, String> imagePaths;
 
-  Future<void> loadQuestions(String level) async {
-    state = await repository.fetchQuestions(level);
+  QuizState({required this.questions, required this.imagePaths});
+}
+
+class QuizController extends StateNotifier<QuizState> {
+  final QuestionRepository questionRepository;
+  final ImageRepository imageRepository;
+
+  QuizController(this.questionRepository, this.imageRepository) 
+      : super(QuizState(questions: [], imagePaths: {}));
+
+  Future<void> load(String level) async {
+    final questions = await questionRepository.fetchQuestions(level);
+    final imagePaths = await imageRepository.fetchImages(level);
+
+    state = QuizState(questions: questions, imagePaths: imagePaths);
   }
 }

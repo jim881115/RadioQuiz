@@ -6,12 +6,14 @@ class ResultsScreen extends StatefulWidget {
   final String level;
   final List<Question> questions;
   final List<int?> selectedAnswers;
+  final Map<String, String> images;
 
   const ResultsScreen({
     super.key,
     required this.level,
     required this.questions,
     required this.selectedAnswers,
+    required this.images,
   });
 
   @override
@@ -21,6 +23,8 @@ class ResultsScreen extends StatefulWidget {
 class _ResultsScreenState extends State<ResultsScreen> {
   int _currentIndex = 0;
   int _correctCount = 0;
+  late double _screenWidth; // 螢幕寬度
+  late double _screenHeight; // 螢幕高度
   late List<Question> _incorrectQuestions;
   late List<int?> _incorrectAnswers;
   late int _passingScore;
@@ -29,7 +33,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   @override
   void initState() {
     super.initState();
-    _currentIndex = 0;
+
     _filterIncorrectQuestions();
     _caculatePass();
   }
@@ -59,6 +63,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
   Widget build(BuildContext context) {
     final currentQuestion = _incorrectQuestions[_currentIndex];
     final selectedAnswer = _incorrectAnswers[_currentIndex];
+
+    _screenWidth = MediaQuery.of(context).size.width;
+    _screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       appBar: AppBar(title: const Text("答題結果")),
@@ -105,6 +112,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 // 顯示目前第幾題
                 Container(
                   padding: const EdgeInsets.all(14),
+                  width: 100,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
                     color: Colors.blue.shade100,
@@ -112,6 +121,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   child: Text(
                     "${_currentIndex + 1} / ${_incorrectQuestions.length}",
                     style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
                   ),
                 ),
                 // 回到主畫面按鈕
@@ -149,9 +159,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
             // 顯示題目圖片（如果有）
             if (currentQuestion.hasImage)
               Image.asset(
-                currentQuestion.imagePath ?? '',
-                fit: BoxFit.cover,
-                height: 200,
+                widget.images[currentQuestion.image] ?? '',
+                fit: BoxFit.contain,
+                height: _screenHeight * 0.25,                                                      
                 width: double.infinity,
               )
             else

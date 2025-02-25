@@ -1,6 +1,7 @@
 class AppConstants {
-  static const String dataPath = 'assets/database';
+  static const String databasePath = 'assets/database';
   static const String databaseName = 'questions.db';
+  static const String imagePath = 'assets/image';
   static const int quizDuration = 40*60;
 
   static const Map<String, Map<String, int>> questionDistribution = {
