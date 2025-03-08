@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/constants/ui_constants.dart';
 import 'data/repositories/question_repository.dart';
 import 'data/repositories/image_repository.dart';
 import 'features/quiz/screens/home_screen.dart';
@@ -32,6 +33,9 @@ class QuizApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 初始化 UIConstants
+    UIConstants().init(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Radio Quiz',
@@ -46,11 +50,14 @@ class QuizApp extends StatelessWidget {
           return QuizScreen(level: level);
         },
         '/results': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          final args = ModalRoute.of(context)!.settings.arguments
+              as Map<String, dynamic>;
           final String level = args['level'] as String;
           final List<Question> questions = args['questions'] as List<Question>;
-          final List<int?> selectedAnswers = args['selectedAnswers'] as List<int?>;
-          final Map<String, String> images = args['images'] as Map<String, String>;
+          final List<int?> selectedAnswers =
+              args['selectedAnswers'] as List<int?>;
+          final Map<String, String> images =
+              args['images'] as Map<String, String>;
           return ResultsScreen(
             level: level,
             questions: questions,

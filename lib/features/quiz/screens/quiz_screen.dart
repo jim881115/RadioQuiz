@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:radioquiz/core/constants/ui_constants.dart';
 import 'package:radioquiz/data/models/question.dart';
 import 'package:radioquiz/features/quiz/viewmodels/quiz_viewmodel.dart';
 import 'package:radioquiz/core/constants/app_constants.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String level;
@@ -11,7 +13,7 @@ class QuizScreen extends ConsumerStatefulWidget {
   const QuizScreen({super.key, required this.level});
 
   @override
-  ConsumerState<QuizScreen> createState () => _QuizScreenState();
+  ConsumerState<QuizScreen> createState() => _QuizScreenState();
 }
 
 class _QuizScreenState extends ConsumerState<QuizScreen> {
@@ -28,7 +30,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   @override
   void initState() {
     super.initState();
-  
+
     _loadData();
     _startTimer();
   }
@@ -40,8 +42,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     // 載入圖片
     images = ref.read(quizControllerProvider).imagePaths;
     debugPrint("images: $images");
-    
-    _selectedAnswers = List<int?>.filled(questions.length, 1);
+
+    _selectedAnswers = List<int?>.filled(questions.length, null);
     _hasUnanswered = true;
   }
 
@@ -60,7 +62,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       } else {
         timer.cancel();
         // 時間結束，跳轉到結果頁
-        Navigator.pushNamed(
+        Navigator.pushReplacementNamed(
           context,
           '/results',
           arguments: {
@@ -87,12 +89,22 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     final minutes = _remainingTime ~/ 60;
     final seconds = _remainingTime % 60;
 
-    _screenWidth = MediaQuery.of(context).size.width;
-    _screenHeight = MediaQuery.of(context).size.height;
+    _screenWidth = UIConstants().screenWidth;
+    _screenHeight = UIConstants().screenHeight;
     _hasUnanswered = _selectedAnswers.any((answer) => answer == null);
-
     return Scaffold(
-      appBar: AppBar(title: Text("${widget.level} radio quiz")),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leadingWidth: UIConstants().screenWidth * 0.2,
+        leading: SvgPicture.asset(AppConstants.iconPath),
+        title: Text(
+          "${widget.level[0].toUpperCase()}${widget.level.substring(1)} Radio Quiz",
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -113,7 +125,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   ),
                   child: Text(
                     "${_currentIndex + 1} / ${questions.length}",
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -128,7 +141,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                       ),
                       child: Text(
                         "$minutes:${seconds.toString().padLeft(2, '0')}",
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -136,43 +150,47 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                 // 結束作答按鈕
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
                     backgroundColor: Colors.green.shade400,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   onPressed: _hasUnanswered
-                  ? () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text("提醒"),
-                          content: const Text("您還有未作答的題目，請完成所有題目後再提交"),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("確定"),
+                      ? () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text("提醒"),
+                              content: const Text("您還有未作答的題目，請完成所有題目後再提交"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("確定"),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      );
-                    }
-                  : () {
-                      Navigator.pushNamed(
-                        context,
-                        '/results',
-                        arguments: {
-                          'level': widget.level,
-                          'questions': questions,
-                          'selectedAnswers': _selectedAnswers,
-                          'images': images,
+                          );
+                        }
+                      : () {
+                          Navigator.pushReplacementNamed(
+                            context,
+                            '/results',
+                            arguments: {
+                              'level': widget.level,
+                              'questions': questions,
+                              'selectedAnswers': _selectedAnswers,
+                              'images': images,
+                            },
+                          );
                         },
-                      );
-                    },
                   child: const Text(
                     "結束作答",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                 ),
               ],
@@ -195,7 +213,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               Image.asset(
                 images[currentQuestion.image] ?? '',
                 fit: BoxFit.contain,
-                height: _screenHeight * 0.33,                                                               
+                height: _screenHeight * 0.33,
                 width: double.infinity,
               )
             else
@@ -214,13 +232,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                         // 選項號碼部分
                         Text(
                           "${index + 1}. ",
-                          style: const TextStyle(fontSize: 18, height: 1.5),
+                          style: const TextStyle(fontSize: 16, height: 1.5),
                         ),
                         // 選項內容部分，處理多行對齊
                         Expanded(
                           child: Text(
                             currentQuestion.options[index],
-                            style: const TextStyle(fontSize: 18, height: 1.3),
+                            style: const TextStyle(fontSize: 16, height: 1.3),
                             textAlign: TextAlign.justify,
                           ),
                         ),
@@ -247,7 +265,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                     final isSelected = _selectedAnswers[_currentIndex] == index;
                     return ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isSelected ? Colors.lightBlue : Colors.white70, // 改變顏色
+                        backgroundColor: isSelected
+                            ? Colors.lightBlue
+                            : Colors.white70, // 改變顏色
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:radioquiz/core/constants/ui_constants.dart';
 import 'package:radioquiz/data/models/question.dart';
 import 'package:radioquiz/core/constants/app_constants.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ResultsScreen extends StatefulWidget {
   final String level;
@@ -47,15 +49,15 @@ class _ResultsScreenState extends State<ResultsScreen> {
       if (widget.selectedAnswers[i] != widget.questions[i].answerIndex) {
         _incorrectQuestions.add(widget.questions[i]);
         _incorrectAnswers.add(widget.selectedAnswers[i]);
-      }
-      else {
+      } else {
         _correctCount++;
       }
     }
   }
 
   void _caculatePass() {
-    _passingScore = AppConstants.quizPassingScore[widget.level] ?? widget.questions.length;
+    _passingScore =
+        AppConstants.quizPassingScore[widget.level] ?? widget.questions.length;
     _isPassed = _correctCount >= _passingScore;
   }
 
@@ -64,11 +66,22 @@ class _ResultsScreenState extends State<ResultsScreen> {
     final currentQuestion = _incorrectQuestions[_currentIndex];
     final selectedAnswer = _incorrectAnswers[_currentIndex];
 
-    _screenWidth = MediaQuery.of(context).size.width;
-    _screenHeight = MediaQuery.of(context).size.height;
+    _screenWidth = UIConstants().screenWidth;
+    _screenHeight = UIConstants().screenHeight;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("答題結果")),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leadingWidth: _screenWidth * 0.2,
+        leading: SvgPicture.asset(AppConstants.iconPath),
+        title: Text(
+          "Quiz Results",
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -79,7 +92,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
               children: [
                 RichText(
                   text: TextSpan(
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+                    style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
                     children: [
                       const TextSpan(
                         text: "答對題數: ",
@@ -97,7 +113,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     ],
                   ),
                 ),
-
                 Text(
                   "合格標準: $_passingScore 題",
                   style: const TextStyle(fontSize: 20),
@@ -120,14 +135,16 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   ),
                   child: Text(
                     "${_currentIndex + 1} / ${_incorrectQuestions.length}",
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                 ),
                 // 回到主畫面按鈕
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
                     backgroundColor: Colors.green.shade400,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -138,7 +155,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   },
                   child: const Text(
                     "回主頁",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                 ),
               ],
@@ -161,7 +181,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
               Image.asset(
                 widget.images[currentQuestion.image] ?? '',
                 fit: BoxFit.contain,
-                height: _screenHeight * 0.25,                                                      
+                height: _screenHeight * 0.25,
                 width: double.infinity,
               )
             else
@@ -180,27 +200,30 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? (isCorrect ? Colors.green.shade100 : Colors.red.shade100)
+                            ? (isCorrect
+                                ? Colors.green.shade100
+                                : Colors.red.shade100)
                             : null,
                         border: Border.all(
-                          color: isCorrect ? Colors.green : Colors.grey.shade400,
+                          color:
+                              isCorrect ? Colors.green : Colors.grey.shade400,
                           width: isCorrect ? 2 : 1,
                         ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(12.0),
+                        padding: const EdgeInsets.all(8.0),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               "${index + 1}. ",
-                              style: const TextStyle(fontSize: 18),
+                              style: const TextStyle(fontSize: 16),
                             ),
                             Expanded(
                               child: Text(
                                 currentQuestion.options[index],
-                                style: const TextStyle(fontSize: 18),
+                                style: const TextStyle(fontSize: 16),
                                 textAlign: TextAlign.justify,
                               ),
                             ),

@@ -1,8 +1,11 @@
+import 'package:flutter/material.dart';
+
 class AppConstants {
   static const String databasePath = 'assets/database';
   static const String databaseName = 'questions.db';
   static const String imagePath = 'assets/image';
-  static const int quizDuration = 40*60;
+  static const String iconPath = 'assets/image/icon/radio_icon.svg';
+  static const int quizDuration = 40 * 60;
 
   static const Map<String, Map<String, int>> questionDistribution = {
     'level3': {
