@@ -157,34 +157,58 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: _hasUnanswered
-                      ? () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text("提醒"),
-                              content: const Text("您還有未作答的題目，請完成所有題目後再提交"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text("確定"),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text("提醒"),
+                        content: Text(
+                            _hasUnanswered
+                                ? "您還有未作答的題目，確定要結束作答並提交嗎？"
+                                : "您已完成所有題目，確定要結束作答並提交嗎？",
+                            style: const TextStyle(fontSize: 18)),
+                        actions: [
+                          Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween, // 讓按鈕分佈於左右兩側
+                            children: [
+                              Expanded(
+                                child: TextButton(
+                                  style: TextButton.styleFrom(
+                                    textStyle:
+                                        const TextStyle(fontSize: 24), // 按鈕文字變大
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      '/results',
+                                      arguments: {
+                                        'level': widget.level,
+                                        'questions': questions,
+                                        'selectedAnswers': _selectedAnswers,
+                                        'images': images,
+                                      },
+                                    );
+                                  },
+                                  child: const Text("是"),
                                 ),
-                              ],
-                            ),
-                          );
-                        }
-                      : () {
-                          Navigator.pushReplacementNamed(
-                            context,
-                            '/results',
-                            arguments: {
-                              'level': widget.level,
-                              'questions': questions,
-                              'selectedAnswers': _selectedAnswers,
-                              'images': images,
-                            },
-                          );
-                        },
+                              ), // 增加按鈕間距
+                              Expanded(
+                                child: TextButton(
+                                  style: TextButton.styleFrom(
+                                    textStyle: const TextStyle(fontSize: 24),
+                                  ),
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("否"),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                   child: const Text(
                     "結束作答",
                     style: TextStyle(
