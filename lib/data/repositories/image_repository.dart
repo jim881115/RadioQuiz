@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:radioquiz/core/constants/app_constants.dart';
 import 'package:path/path.dart';
@@ -17,13 +16,13 @@ class ImageRepository {
   /// 讀取 assets 下的圖片路徑
   Future<Map<String, String>> _loadImagePaths(String folderPath) async {
     try {
-      final manifestContent = await rootBundle.loadString('AssetManifest.json');
-      final Map<String, dynamic> manifestMap = Map<String, dynamic>.from(
-          json.decode(manifestContent));
+      final AssetManifest manifest =
+          await AssetManifest.loadFromAssetBundle(rootBundle);
+      final List<String> allAssets = manifest.listAssets();
 
       Map<String, String> imageMap = {};
 
-      for (var key in manifestMap.keys) {
+      for (var key in allAssets) {
         if (key.startsWith(folderPath)) {
           // 取出檔名 (去掉資料夾路徑)
           String fileName = key.split('/').last;
