@@ -9,18 +9,23 @@ class QuestionRepository {
   Database? _db;
 
   Future<void> initDatabase() async {
-    String dbPath = await getDatabasesPath();
-    String path = join(dbPath, AppConstants.databaseName);
+    final String dbPath = await getDatabasesPath();
+    final String path = join(dbPath, AppConstants.databaseName);
+    final File dbFile = File(path);
 
-    try {
-      ByteData data = await rootBundle
-          .load(join(AppConstants.databasePath, AppConstants.databaseName));
-      List<int> bytes =
-          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    // check with database not exist
+    if (!await dbFile.exists()) {
+      try {
+        final ByteData data = await rootBundle.load(
+          join(AppConstants.databasePath, AppConstants.databaseName),
+        );
+        final List<int> bytes =
+            data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
-      await File(path).writeAsBytes(bytes);
-    } catch (e) {
-      throw Exception("Error copying database: $e");
+        await dbFile.writeAsBytes(bytes);
+      } catch (e) {
+        throw Exception("Error copying database: $e");
+      }
     }
 
     _db = await openDatabase(path);
@@ -31,7 +36,7 @@ class QuestionRepository {
       throw Exception("Database not initialized");
     }
 
-    // 取得該等級的出題規則
+    // get level question distribution rules
     final questionRules = AppConstants.questionDistribution[level];
 
     if (questionRules == null) {
@@ -40,10 +45,10 @@ class QuestionRepository {
 
     List<Question> selectedQuestions = [];
 
-    // 依照類別隨機抽取題目
+    // get questions based on distribution rules
     for (var entry in questionRules.entries) {
-      String category = entry.key; // 類型名稱
-      int count = entry.value; // 要抽取的數量
+      String category = entry.key;
+      int count = entry.value;
 
       final List<Map<String, dynamic>> maps = await _db!.rawQuery(
           "SELECT * FROM $level WHERE category = ? ORDER BY RANDOM() LIMIT ?",
