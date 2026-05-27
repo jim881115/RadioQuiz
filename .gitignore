@@ -70,3 +70,6 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# GitHub related
+.github
