@@ -1,32 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radioquiz/core/constants/ui_constants.dart';
 import 'package:radioquiz/data/models/question.dart';
 import 'package:radioquiz/core/constants/app_constants.dart';
+import 'package:radioquiz/features/quiz/viewmodels/quiz_viewmodel.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class ResultsScreen extends StatefulWidget {
+class ResultsScreen extends ConsumerStatefulWidget {
   final String level;
-  final List<Question> questions;
-  final List<int?> selectedAnswers;
-  final Map<String, String> images;
 
-  const ResultsScreen({
-    super.key,
-    required this.level,
-    required this.questions,
-    required this.selectedAnswers,
-    required this.images,
-  });
+  const ResultsScreen({super.key, required this.level});
 
   @override
-  State<ResultsScreen> createState() => _ResultsScreenState();
+  ConsumerState<ResultsScreen> createState() => _ResultsScreenState();
 }
 
-class _ResultsScreenState extends State<ResultsScreen> {
+class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   int _currentIndex = 0;
   int _correctCount = 0;
-  late double _screenWidth; // 螢幕寬度
-  late double _screenHeight; // 螢幕高度
+  late double _screenHeight;
   late List<Question> _incorrectQuestions;
   late List<int?> _incorrectAnswers;
   late int _passingScore;
@@ -35,51 +27,79 @@ class _ResultsScreenState extends State<ResultsScreen> {
   @override
   void initState() {
     super.initState();
-
-    _filterIncorrectQuestions();
-    _caculatePass();
+    _computeResults();
   }
 
-  void _filterIncorrectQuestions() {
+  void _computeResults() {
+    final state = ref.read(quizControllerProvider);
     _correctCount = 0;
     _incorrectQuestions = [];
     _incorrectAnswers = [];
 
-    for (int i = 0; i < widget.questions.length; i++) {
-      if (widget.selectedAnswers[i] != widget.questions[i].answerIndex) {
-        _incorrectQuestions.add(widget.questions[i]);
-        _incorrectAnswers.add(widget.selectedAnswers[i]);
+    for (int i = 0; i < state.questions.length; i++) {
+      if (state.selectedAnswers[i] != state.questions[i].answerIndex) {
+        _incorrectQuestions.add(state.questions[i]);
+        _incorrectAnswers.add(state.selectedAnswers[i]);
       } else {
         _correctCount++;
       }
     }
-  }
 
-  void _caculatePass() {
     _passingScore =
-        AppConstants.quizPassingScore[widget.level] ?? widget.questions.length;
+        AppConstants.quizPassingScore[widget.level] ?? state.questions.length;
     _isPassed = _correctCount >= _passingScore;
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(quizControllerProvider);
+    _screenHeight = UIConstants().screenHeight;
+
+    // All questions correct case
+    if (_incorrectQuestions.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leadingWidth: UIConstants().screenWidth * 0.2,
+          leading: SvgPicture.asset(AppConstants.iconPath),
+          title: const Text(
+            "Quiz Results",
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text("🎉", style: TextStyle(fontSize: 80)),
+              const SizedBox(height: 16),
+              const Text(
+                "恭喜全對！",
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () =>
+                    Navigator.popUntil(context, ModalRoute.withName('/')),
+                child: const Text("回主頁"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final currentQuestion = _incorrectQuestions[_currentIndex];
     final selectedAnswer = _incorrectAnswers[_currentIndex];
-
-    _screenWidth = UIConstants().screenWidth;
-    _screenHeight = UIConstants().screenHeight;
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        leadingWidth: _screenWidth * 0.2,
+        leadingWidth: UIConstants().screenWidth * 0.2,
         leading: SvgPicture.asset(AppConstants.iconPath),
-        title: Text(
+        title: const Text(
           "Quiz Results",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
       body: Padding(
@@ -97,9 +117,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                         fontWeight: FontWeight.bold,
                         color: Colors.black),
                     children: [
-                      const TextSpan(
-                        text: "答對題數: ",
-                      ),
+                      const TextSpan(text: "答對題數: "),
                       TextSpan(
                         text: "$_correctCount",
                         style: TextStyle(
@@ -107,9 +125,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      TextSpan(
-                        text: " / ${widget.questions.length}",
-                      ),
+                      TextSpan(text: " / ${state.questions.length}"),
                     ],
                   ),
                 ),
@@ -120,11 +136,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ],
             ),
             const SizedBox(height: 20),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 顯示目前第幾題
                 Container(
                   padding: const EdgeInsets.all(14),
                   width: 100,
@@ -140,7 +154,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                // 回到主畫面按鈕
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
@@ -164,8 +177,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ],
             ),
             const SizedBox(height: 20),
-
-            // 顯示題目
             SizedBox(
               width: MediaQuery.of(context).size.width,
               child: Text(
@@ -175,19 +186,15 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // 顯示題目圖片（如果有）
             if (currentQuestion.hasImage)
               Image.asset(
-                widget.images[currentQuestion.image] ?? '',
+                state.imagePaths[currentQuestion.image] ?? '',
                 fit: BoxFit.contain,
                 height: _screenHeight * 0.25,
                 width: double.infinity,
               )
             else
-              const SizedBox(height: 40), // 空間預留
-
-            // 顯示選項
+              const SizedBox(height: 40),
             Expanded(
               child: ListView.builder(
                 itemCount: currentQuestion.options.length,
@@ -235,12 +242,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 },
               ),
             ),
-
-            // 上一題 & 下一題按鈕
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 上一題
                 ElevatedButton(
                   onPressed: _currentIndex > 0
                       ? () {
@@ -251,8 +255,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
                       : null,
                   child: const Text("上一題"),
                 ),
-
-                // 下一題
                 ElevatedButton(
                   onPressed: _currentIndex < _incorrectQuestions.length - 1
                       ? () {

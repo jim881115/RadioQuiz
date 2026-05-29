@@ -29,16 +29,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     if (_navigated) return;
     _navigated = true;
 
-    final state = ref.read(quizControllerProvider);
     Navigator.pushReplacementNamed(
       context,
       '/results',
-      arguments: {
-        'level': widget.level,
-        'questions': state.questions,
-        'selectedAnswers': state.selectedAnswers,
-        'images': state.imagePaths,
-      },
+      arguments: widget.level,
     );
   }
 
