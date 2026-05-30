@@ -3,30 +3,38 @@ import 'package:radioquiz/core/constants/app_constants.dart';
 import 'package:path/path.dart';
 
 class ImageRepository {
-  static String basePath = AppConstants.imagePath;
+  static final String basePath = AppConstants.imagePath;
 
-  /// 取得指定等級的所有圖片路徑
+  /// cache for image paths to avoid scanning the asset manifest on every call
+  static final Map<String, Map<String, String>> _cache = {};
+
   Future<Map<String, String>> fetchImages(String level) async {
-    String levelPath = join(basePath, level);
+    // chace hit
+    if (_cache.containsKey(level)) {
+      return _cache[level]!;
+    }
 
-    // 取得該資料夾下的所有圖片
-    return await _loadImagePaths(levelPath);
+    final String levelPath = join(basePath, level);
+    final Map<String, String> result = await _loadImagePaths(levelPath);
+
+    // cache the result for future calls
+    _cache[level] = result;
+    return result;
   }
 
-  /// 讀取 assets 下的圖片路徑
+  /// read image paths from assets
   Future<Map<String, String>> _loadImagePaths(String folderPath) async {
     try {
       final AssetManifest manifest =
           await AssetManifest.loadFromAssetBundle(rootBundle);
       final List<String> allAssets = manifest.listAssets();
 
-      Map<String, String> imageMap = {};
+      final Map<String, String> imageMap = {};
 
-      for (var key in allAssets) {
+      for (final String key in allAssets) {
         if (key.startsWith(folderPath)) {
-          // 取出檔名 (去掉資料夾路徑)
-          String fileName = key.split('/').last;
-          imageMap[fileName] = key; // 建立 filename -> 完整路徑 的映射
+          final String fileName = key.split('/').last;
+          imageMap[fileName] = key;
         }
       }
 
