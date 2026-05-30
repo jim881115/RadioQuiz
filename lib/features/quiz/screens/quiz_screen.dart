@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radioquiz/core/constants/ui_constants.dart';
-import 'package:radioquiz/features/quiz/viewmodels/quiz_viewmodel.dart';
 import 'package:radioquiz/core/constants/app_constants.dart';
+import 'package:radioquiz/features/quiz/viewmodels/quiz_viewmodel.dart';
+import 'package:radioquiz/shared/widgets/error_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
@@ -55,20 +56,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
     if (state.error != null) {
       return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('載入失敗：${state.error}', textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref
-                    .read(quizControllerProvider.notifier)
-                    .load(widget.level),
-                child: const Text('重試'),
-              ),
-            ],
-          ),
+        body: ErrorView(
+          message: '載入失敗：${state.error}',
+          icon: Icons.error_outline,
+          onRetry: () =>
+              ref.read(quizControllerProvider.notifier).load(widget.level),
         ),
       );
     }
