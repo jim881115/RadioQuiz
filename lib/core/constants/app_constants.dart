@@ -1,3 +1,5 @@
+/// Application-wide constants including database config, question distribution,
+/// quiz duration, and passing score thresholds.
 class AppConstants {
   static const String databasePath = 'assets/database';
   static const String databaseName = 'questions.db';
@@ -5,6 +7,10 @@ class AppConstants {
   static const String iconPath = 'assets/image/icon/radio_icon.svg';
   static const int quizDuration = 40 * 60;
 
+  /// Number of questions to draw from each category per level.
+  ///
+  /// Key: level name (`level1`, `level2`, `level3`).
+  /// Value: map of category name → question count.
   static const Map<String, Map<String, int>> questionDistribution = {
     'level3': {
       '無線電規章與相關法規': 13,
@@ -32,6 +38,9 @@ class AppConstants {
     },
   };
 
+  /// Minimum correct answers required to pass each level.
+  ///
+  /// Key: level name. Value: passing score.
   static const Map<String, int> quizPassingScore = {
     'level3': 25,
     'level2': 32,
