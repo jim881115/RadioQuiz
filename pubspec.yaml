@@ -44,7 +44,7 @@ dev_dependencies:
     sdk: flutter
 
   # let unit test run in desktop environment
-  sqflite_common_ffi: ^2.3.0
+  sqflite_common_ffi: 2.4.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -52,6 +52,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  sqlite3: ^3.3.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
