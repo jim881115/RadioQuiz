@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// 通用的錯誤畫面，顯示錯誤訊息與可選的重試按鈕
+/// A reusable error view widget that displays an error message and an optional
+/// retry button.
 class ErrorView extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
