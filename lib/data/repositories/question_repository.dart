@@ -6,15 +6,27 @@ import 'dart:io';
 import 'package:radioquiz/core/constants/app_constants.dart';
 import 'package:radioquiz/data/models/question.dart';
 
+/// Repository for accessing quiz questions from the SQLite database.
+///
+/// Handles database initialization (copying from assets on first launch)
+/// and fetching random questions per level/category based on distribution rules.
 class QuestionRepository {
   Database? _db;
 
+  /// Creates a repository that will initialize the database from assets.
+  QuestionRepository();
+
+  /// Creates a repository with a pre-initialized database (for testing only).
+  @visibleForTesting
+  QuestionRepository.test(this._db);
+
+  /// Initializes the database by copying from assets if not already present.
   Future<void> initDatabase() async {
     final String dbPath = await getDatabasesPath();
     final String path = join(dbPath, AppConstants.databaseName);
     final File dbFile = File(path);
 
-    // check with database not exist
+    // Only copy from assets when the database file does not yet exist.
     if (!await dbFile.exists()) {
       try {
         final ByteData data = await rootBundle.load(
@@ -32,12 +44,17 @@ class QuestionRepository {
     _db = await openDatabase(path);
   }
 
+  /// Fetches a random set of questions for the given [level].
+  ///
+  /// Questions are drawn per category based on [AppConstants.questionDistribution].
+  /// Throws if the database is not initialized, the level is invalid, or no
+  /// questions are found.
   Future<List<Question>> fetchQuestions(String level) async {
     if (_db == null) {
       throw Exception("Database not initialized");
     }
 
-    // get level question distribution rules
+    // Get level question distribution rules.
     final questionRules = AppConstants.questionDistribution[level];
 
     if (questionRules == null) {
