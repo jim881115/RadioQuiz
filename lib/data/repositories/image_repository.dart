@@ -1,15 +1,38 @@
 import 'package:flutter/services.dart';
+import 'package:meta/meta.dart';
 import 'package:radioquiz/core/constants/app_constants.dart';
 import 'package:path/path.dart';
 
+/// Repository for loading image file paths from the application asset bundle.
+///
+/// Results are cached in memory so subsequent calls for the same level
+/// skip re-scanning the asset manifest.
 class ImageRepository {
   static final String basePath = AppConstants.imagePath;
-
-  /// cache for image paths to avoid scanning the asset manifest on every call
   static final Map<String, Map<String, String>> _cache = {};
+  final AssetBundle? _bundle;
 
+  /// Creates a repository that uses [rootBundle] for asset lookups.
+  ImageRepository() : _bundle = null;
+
+  /// Creates a repository with a custom [AssetBundle] (for testing only).
+  @visibleForTesting
+  ImageRepository.test(this._bundle);
+
+  /// Clears the in-memory cache (for testing only).
+  @visibleForTesting
+  static void resetCache() => _cache.clear();
+
+  /// Seeds the cache with test data (for testing only).
+  @visibleForTesting
+  static void seedCache(String level, Map<String, String> data) =>
+      _cache[level] = data;
+
+  /// Returns a map of filename → full asset path for all images in [level].
+  ///
+  /// The result is cached; subsequent calls return the cached map directly.
   Future<Map<String, String>> fetchImages(String level) async {
-    // chace hit
+    // cache hit
     if (_cache.containsKey(level)) {
       return _cache[level]!;
     }
@@ -25,8 +48,9 @@ class ImageRepository {
   /// read image paths from assets
   Future<Map<String, String>> _loadImagePaths(String folderPath) async {
     try {
+      final AssetBundle bundle = _bundle ?? rootBundle;
       final AssetManifest manifest =
-          await AssetManifest.loadFromAssetBundle(rootBundle);
+          await AssetManifest.loadFromAssetBundle(bundle);
       final List<String> allAssets = manifest.listAssets();
 
       final Map<String, String> imageMap = {};
