@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radioquiz/core/constants/ui_constants.dart';
 import 'package:radioquiz/core/constants/app_constants.dart';
+import 'package:radioquiz/core/theme/app_theme.dart';
 import 'package:radioquiz/features/quiz/viewmodels/quiz_viewmodel.dart';
 import 'package:radioquiz/shared/widgets/error_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -171,7 +172,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            color: Colors.blue.shade100,
+            color: AppTheme.infoBlue,
           ),
           child: Text(
             "${state.currentIndex + 1} / ${state.totalQuestions}",
@@ -186,7 +187,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: Colors.red.shade100,
+                color: AppTheme.warningRed,
               ),
               child: Text(
                 "$minutes:${seconds.toString().padLeft(2, '0')}",
@@ -200,7 +201,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            backgroundColor: Colors.green.shade400,
+            backgroundColor: AppTheme.primaryGreen,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -280,7 +281,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                 state.selectedAnswers[state.currentIndex] == index;
             return ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: isSelected ? Colors.lightBlue : Colors.white70,
+                backgroundColor:
+                    isSelected ? AppTheme.selectedBlue : Colors.white70,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

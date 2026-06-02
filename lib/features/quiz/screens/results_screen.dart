@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radioquiz/core/constants/ui_constants.dart';
+import 'package:radioquiz/core/theme/app_theme.dart';
 import 'package:radioquiz/data/models/question.dart';
 import 'package:radioquiz/core/constants/app_constants.dart';
 import 'package:radioquiz/features/quiz/viewmodels/quiz_viewmodel.dart';
@@ -115,13 +116,15 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                     style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black),
+                        color: AppTheme.textPrimary),
                     children: [
                       const TextSpan(text: "答對題數: "),
                       TextSpan(
                         text: "$_correctCount",
                         style: TextStyle(
-                          color: _isPassed ? Colors.green : Colors.red,
+                          color: _isPassed
+                              ? AppTheme.correctGreen
+                              : AppTheme.wrongRed,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -145,7 +148,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    color: Colors.blue.shade100,
+                    color: AppTheme.infoBlue,
                   ),
                   child: Text(
                     "${_currentIndex + 1} / ${_incorrectQuestions.length}",
@@ -158,7 +161,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 14),
-                    backgroundColor: Colors.green.shade400,
+                    backgroundColor: AppTheme.primaryGreen,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -208,12 +211,13 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? (isCorrect
-                                ? Colors.green.shade100
-                                : Colors.red.shade100)
+                                ? AppTheme.correctGreenBg
+                                : AppTheme.wrongRedBg)
                             : null,
                         border: Border.all(
-                          color:
-                              isCorrect ? Colors.green : Colors.grey.shade400,
+                          color: isCorrect
+                              ? AppTheme.correctGreen
+                              : AppTheme.borderGrey,
                           width: isCorrect ? 2 : 1,
                         ),
                         borderRadius: BorderRadius.circular(8),

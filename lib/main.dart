@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/constants/ui_constants.dart';
+import 'core/theme/app_theme.dart';
 import 'data/repositories/question_repository.dart';
 import 'data/repositories/image_repository.dart';
 import 'features/quiz/screens/home_screen.dart';
@@ -38,9 +39,7 @@ class QuizApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Radio Quiz',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: AppTheme.light,
       initialRoute: '/',
       routes: {
         '/': (context) => const HomeScreen(),
