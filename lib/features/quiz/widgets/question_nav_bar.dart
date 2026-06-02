@@ -4,9 +4,14 @@ import 'package:radioquiz/core/theme/app_theme.dart';
 /// A horizontal, scrollable question-number navigation bar.
 ///
 /// Displays one cell per question. The colour indicates its status:
+///   - blue  → current question
+///   - green → answered (or answered correctly when [isCorrectAnswers] is set)
+///   - red   → answered incorrectly (only when [isCorrectAnswers] is set)
 ///   - grey  → unanswered
-///   - green → answered
-///   - blue  → currently viewed question
+///
+/// When [isCorrectAnswers] is provided, green/red distinguish correct/wrong
+/// answers instead of the default "answered vs unanswered" logic.
+/// [isCorrectAnswers] must have the same length as [answerStates].
 ///
 /// Tapping a cell jumps to that question via [onQuestionTap].
 class QuestionNavBar extends StatelessWidget {
@@ -15,12 +20,19 @@ class QuestionNavBar extends StatelessWidget {
   final List<int?> answerStates;
   final void Function(int index) onQuestionTap;
 
+  /// Whether each answered question was correct.
+  ///
+  /// When provided, cells use green for correct and red for incorrect.
+  /// When `null`, all answered cells are green.
+  final List<bool>? isCorrectAnswers;
+
   const QuestionNavBar({
     super.key,
     required this.totalQuestions,
     required this.currentIndex,
     required this.answerStates,
     required this.onQuestionTap,
+    this.isCorrectAnswers,
   });
 
   @override
@@ -37,7 +49,13 @@ class QuestionNavBar extends StatelessWidget {
           Color cellColor;
           if (isCurrent) {
             cellColor = AppTheme.selectedBlue;
+          } else if (isAnswered && isCorrectAnswers != null) {
+            // Results review mode: distinguish correct vs wrong.
+            cellColor = isCorrectAnswers![index]
+                ? AppTheme.correctGreen
+                : AppTheme.wrongRed;
           } else if (isAnswered) {
+            // Quiz mode: all answered are green.
             cellColor = AppTheme.correctGreen;
           } else {
             cellColor = AppTheme.borderGrey;

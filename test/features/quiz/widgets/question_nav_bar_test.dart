@@ -43,10 +43,10 @@ void main() {
       await tester.tap(find.text('3'));
       await tester.pump();
 
-      expect(tappedIndex, 2); // 0-based index
+      expect(tappedIndex, 2);
     });
 
-    testWidgets('answered cells show green, current cell shows blue',
+    testWidgets('all answered cells are green when isCorrectAnswers is null',
         (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -54,7 +54,41 @@ void main() {
             body: QuestionNavBar(
               totalQuestions: 3,
               currentIndex: 1,
-              answerStates: [0, null, null], // Question 1 answered
+              answerStates: [0, null, null],
+              onQuestionTap: (_) {},
+            ),
+          ),
+        ),
+      );
+    });
+
+    testWidgets('correct cell is green when isCorrectAnswers is provided',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: QuestionNavBar(
+              totalQuestions: 2,
+              currentIndex: 0,
+              answerStates: [0, 1],
+              isCorrectAnswers: [true, false],
+              onQuestionTap: (_) {},
+            ),
+          ),
+        ),
+      );
+    });
+
+    testWidgets('incorrect cell is red when isCorrectAnswers is provided',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: QuestionNavBar(
+              totalQuestions: 2,
+              currentIndex: 0,
+              answerStates: [0, 1],
+              isCorrectAnswers: [true, false],
               onQuestionTap: (_) {},
             ),
           ),

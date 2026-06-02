@@ -221,6 +221,9 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
               totalQuestions: state.questions.length,
               currentIndex: _currentIndex,
               answerStates: state.selectedAnswers,
+              isCorrectAnswers: state.questions
+                  .map((q) => state.selectedAnswers[state.questions.indexOf(q)] == q.answerIndex)
+                  .toList(),
               onQuestionTap: (index) {
                 setState(() {
                   _currentIndex = index;
