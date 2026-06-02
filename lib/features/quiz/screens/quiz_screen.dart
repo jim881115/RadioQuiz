@@ -4,6 +4,7 @@ import 'package:radioquiz/core/constants/ui_constants.dart';
 import 'package:radioquiz/core/constants/app_constants.dart';
 import 'package:radioquiz/core/theme/app_theme.dart';
 import 'package:radioquiz/features/quiz/viewmodels/quiz_viewmodel.dart';
+import 'package:radioquiz/features/quiz/widgets/question_nav_bar.dart';
 import 'package:radioquiz/shared/widgets/error_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -76,6 +77,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     final minutes = state.remainingTime ~/ 60;
     final seconds = state.remainingTime % 60;
     final screenHeight = UIConstants().screenHeight;
+    final controller = ref.read(quizControllerProvider.notifier);
     final levelTitle =
         '${widget.level[0].toUpperCase()}${widget.level.substring(1)} Radio Quiz';
 
@@ -151,8 +153,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             // answer buttons
             _buildAnswerButtons(state),
 
-            // next/previous buttons
-            _buildNavButtons(state),
+            const SizedBox(height: 8),
+
+            // question navigation bar
+            QuestionNavBar(
+              totalQuestions: state.totalQuestions,
+              currentIndex: state.currentIndex,
+              answerStates: state.selectedAnswers,
+              onQuestionTap: (index) => controller.goToQuestion(index),
+            ),
           ],
         ),
       ),
@@ -297,27 +306,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           },
         ),
         const SizedBox(height: 10),
-      ],
-    );
-  }
-
-  /// next/previous buttons
-  Widget _buildNavButtons(QuizState state) {
-    final controller = ref.read(quizControllerProvider.notifier);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        ElevatedButton(
-          onPressed:
-              state.currentIndex > 0 ? () => controller.goToPrevious() : null,
-          child: const Text("上一題"),
-        ),
-        ElevatedButton(
-          onPressed: state.currentIndex < state.totalQuestions - 1
-              ? () => controller.goToNext()
-              : null,
-          child: const Text("下一題"),
-        ),
       ],
     );
   }

@@ -8,6 +8,7 @@ import 'package:radioquiz/data/repositories/question_repository.dart';
 import 'package:radioquiz/data/repositories/image_repository.dart';
 import 'package:radioquiz/features/quiz/screens/quiz_screen.dart';
 import 'package:radioquiz/features/quiz/viewmodels/quiz_viewmodel.dart';
+import 'package:radioquiz/features/quiz/widgets/question_nav_bar.dart';
 import 'package:radioquiz/shared/widgets/error_view.dart';
 
 /// A [QuizController] that does nothing on [load], allowing tests to
@@ -136,7 +137,7 @@ void main() {
     expect(find.text('Sample test question 1?'), findsOneWidget);
   });
 
-  testWidgets('tapping next question button changes displayed question',
+  testWidgets('tapping a question number in the nav bar jumps to that question',
       (tester) async {
     final state = QuizState(
       isLoading: false,
@@ -152,15 +153,17 @@ void main() {
     // Initially shows question 1.
     expect(find.text('Sample test question 1?'), findsOneWidget);
 
-    // Tap "下一題".
-    await tester.tap(find.text('下一題'));
+    // Tap question number "2" inside the nav bar (not the answer button).
+    final navBar = find.byType(QuestionNavBar);
+    await tester.tap(find.descendant(of: navBar, matching: find.text('2')));
     await tester.pump();
 
     // Now shows question 2.
     expect(find.text('Sample test question 2?'), findsOneWidget);
   });
 
-  testWidgets('tapping previous question button goes back', (tester) async {
+  testWidgets('tapping a previous question number in the nav bar goes back',
+      (tester) async {
     final state = QuizState(
       isLoading: false,
       currentIndex: 1, // Start at question 2.
@@ -176,8 +179,9 @@ void main() {
     // Initially shows question 2.
     expect(find.text('Sample test question 2?'), findsOneWidget);
 
-    // Tap "上一題".
-    await tester.tap(find.text('上一題'));
+    // Tap question number "1" inside the nav bar.
+    final navBar = find.byType(QuestionNavBar);
+    await tester.tap(find.descendant(of: navBar, matching: find.text('1')));
     await tester.pump();
 
     // Now shows question 1.
