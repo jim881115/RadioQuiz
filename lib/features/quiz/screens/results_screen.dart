@@ -5,6 +5,7 @@ import 'package:radioquiz/core/theme/app_theme.dart';
 import 'package:radioquiz/data/models/question.dart';
 import 'package:radioquiz/core/constants/app_constants.dart';
 import 'package:radioquiz/features/quiz/viewmodels/quiz_viewmodel.dart';
+import 'package:radioquiz/features/quiz/widgets/question_nav_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class ResultsScreen extends ConsumerStatefulWidget {
@@ -20,8 +21,6 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   int _currentIndex = 0;
   int _correctCount = 0;
   late double _screenHeight;
-  late List<Question> _incorrectQuestions;
-  late List<int?> _incorrectAnswers;
   late int _passingScore;
   late bool _isPassed;
 
@@ -34,14 +33,9 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   void _computeResults() {
     final state = ref.read(quizControllerProvider);
     _correctCount = 0;
-    _incorrectQuestions = [];
-    _incorrectAnswers = [];
 
     for (int i = 0; i < state.questions.length; i++) {
-      if (state.selectedAnswers[i] != state.questions[i].answerIndex) {
-        _incorrectQuestions.add(state.questions[i]);
-        _incorrectAnswers.add(state.selectedAnswers[i]);
-      } else {
+      if (state.selectedAnswers[i] == state.questions[i].answerIndex) {
         _correctCount++;
       }
     }
@@ -56,42 +50,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
     final state = ref.watch(quizControllerProvider);
     _screenHeight = UIConstants().screenHeight;
 
-    // All questions correct case
-    if (_incorrectQuestions.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          leadingWidth: UIConstants().screenWidth * 0.2,
-          leading: SvgPicture.asset(AppConstants.iconPath),
-          title: const Text(
-            "Quiz Results",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text("🎉", style: TextStyle(fontSize: 80)),
-              const SizedBox(height: 16),
-              const Text(
-                "恭喜全對！",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () =>
-                    Navigator.popUntil(context, ModalRoute.withName('/')),
-                child: const Text("回主頁"),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    final currentQuestion = _incorrectQuestions[_currentIndex];
-    final selectedAnswer = _incorrectAnswers[_currentIndex];
+    final Question currentQuestion = state.questions[_currentIndex];
+    final int? selectedAnswer = state.selectedAnswers[_currentIndex];
 
     return Scaffold(
       appBar: AppBar(
@@ -108,6 +68,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Score summary row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -139,6 +100,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
               ],
             ),
             const SizedBox(height: 20),
+
+            // Question index + home button
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -151,7 +114,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                     color: AppTheme.infoBlue,
                   ),
                   child: Text(
-                    "${_currentIndex + 1} / ${_incorrectQuestions.length}",
+                    "${_currentIndex + 1} / ${state.questions.length}",
                     style: const TextStyle(
                         fontSize: 20, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
@@ -180,6 +143,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
               ],
             ),
             const SizedBox(height: 20),
+
+            // Question text
             SizedBox(
               width: MediaQuery.of(context).size.width,
               child: Text(
@@ -189,6 +154,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
               ),
             ),
             const SizedBox(height: 20),
+
+            // Image if present
             if (currentQuestion.hasImage)
               Image.asset(
                 state.imagePaths[currentQuestion.image] ?? '',
@@ -198,6 +165,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
               )
             else
               const SizedBox(height: 40),
+
+            // Option list
             Expanded(
               child: ListView.builder(
                 itemCount: currentQuestion.options.length,
@@ -246,30 +215,17 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                 },
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: _currentIndex > 0
-                      ? () {
-                          setState(() {
-                            _currentIndex--;
-                          });
-                        }
-                      : null,
-                  child: const Text("上一題"),
-                ),
-                ElevatedButton(
-                  onPressed: _currentIndex < _incorrectQuestions.length - 1
-                      ? () {
-                          setState(() {
-                            _currentIndex++;
-                          });
-                        }
-                      : null,
-                  child: const Text("下一題"),
-                ),
-              ],
+
+            // Question navigation bar for all questions
+            QuestionNavBar(
+              totalQuestions: state.questions.length,
+              currentIndex: _currentIndex,
+              answerStates: state.selectedAnswers,
+              onQuestionTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
             ),
             const SizedBox(height: 20),
           ],

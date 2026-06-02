@@ -7,6 +7,7 @@ import 'package:radioquiz/data/repositories/question_repository.dart';
 import 'package:radioquiz/data/repositories/image_repository.dart';
 import 'package:radioquiz/features/quiz/screens/results_screen.dart';
 import 'package:radioquiz/features/quiz/viewmodels/quiz_viewmodel.dart';
+import 'package:radioquiz/features/quiz/widgets/question_nav_bar.dart';
 
 /// A [QuizController] that does nothing on [load], allowing tests to
 /// pre-configure the exact [QuizState] without side effects.
@@ -63,8 +64,7 @@ Question makeQuestion({int id = 1, int answerIndex = 0}) {
 }
 
 void main() {
-  testWidgets('shows congratulations when all answers are correct',
-      (tester) async {
+  testWidgets('shows score 1 / 1 when all answers are correct', (tester) async {
     final questions = [makeQuestion(id: 1, answerIndex: 0)];
     final state = QuizState(
       questions: questions,
@@ -76,11 +76,13 @@ void main() {
 
     await tester.pumpWidget(buildResultsApp(state));
 
-    expect(find.text('恭喜全對！'), findsOneWidget);
-    expect(find.text('🎉'), findsOneWidget);
+    // Score row shows all correct.
+    expect(find.textContaining('1 / 1'), findsOneWidget);
+    // All questions are shown for review (not a separate congrats page).
+    expect(find.text('Test question 1?'), findsOneWidget);
   });
 
-  testWidgets('shows score summary when there are incorrect answers',
+  testWidgets('shows all questions in review regardless of correctness',
       (tester) async {
     final questions = [
       makeQuestion(id: 1, answerIndex: 0),
@@ -96,18 +98,20 @@ void main() {
 
     await tester.pumpWidget(buildResultsApp(state));
 
-    // The incorrect question should be displayed as the first review item.
-    expect(find.text('Test question 2?'), findsOneWidget);
-    // The correct question should not appear in the review.
-    expect(find.text('Test question 1?'), findsNothing);
+    // Starts at question 1 (currentIndex=0), which is correct.
+    expect(find.text('Test question 1?'), findsOneWidget);
+    // Score row shows 1 / 2.
+    expect(find.textContaining('1 / 2'), findsOneWidget);
   });
 
-  testWidgets('shows "回主頁" button when all answers are correct',
-      (tester) async {
-    final questions = [makeQuestion(id: 1, answerIndex: 0)];
+  testWidgets('navigates to incorrect question via nav bar', (tester) async {
+    final questions = [
+      makeQuestion(id: 1, answerIndex: 0),
+      makeQuestion(id: 2, answerIndex: 1),
+    ];
     final state = QuizState(
       questions: questions,
-      selectedAnswers: [0],
+      selectedAnswers: [0, 0], // Second is wrong.
       imagePaths: {},
       remainingTime: 0,
       isCompleted: true,
@@ -115,18 +119,20 @@ void main() {
 
     await tester.pumpWidget(buildResultsApp(state));
 
-    expect(find.text('回主頁'), findsOneWidget);
+    // Tap question number "2" in the nav bar.
+    final navBar = find.byType(QuestionNavBar);
+    await tester.tap(find.descendant(of: navBar, matching: find.text('2')));
+    await tester.pump();
+
+    // Now shows question 2 (the wrong one).
+    expect(find.text('Test question 2?'), findsOneWidget);
   });
 
-  testWidgets('shows "回主頁" button when there are incorrect answers',
-      (tester) async {
-    final questions = [
-      makeQuestion(id: 1, answerIndex: 0),
-      makeQuestion(id: 2, answerIndex: 1),
-    ];
+  testWidgets('shows "回主頁" button', (tester) async {
+    final questions = [makeQuestion(id: 1, answerIndex: 0)];
     final state = QuizState(
       questions: questions,
-      selectedAnswers: [0, 0],
+      selectedAnswers: [0],
       imagePaths: {},
       remainingTime: 0,
       isCompleted: true,
